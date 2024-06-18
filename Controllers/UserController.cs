@@ -39,7 +39,11 @@ namespace CRUD_application_2.Controllers
         public ActionResult Create()
         {
             //Implement the Create method here
+
+
             return View(userlist);
+
+
 
 
         }
@@ -113,13 +117,21 @@ namespace CRUD_application_2.Controllers
         {
             // Implement the Delete method here
 
+            try
+            {
                 var user = userlist.FirstOrDefault(u => u.Id == id);
-            if (user == null)
+                if (user == null)
                 {
                     return HttpNotFound();
                 }
-            userlist.Remove(user);
-            return RedirectToAction("Index");
+                userlist.Remove(user);
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                // In case of any exception, you might want to log the error and redirect to a generic error page or return a specific view.
+                return View("Error"); // Ensure you have an Error view or handle this as per your application's error handling policy.
+            }
 
         }
  
@@ -127,15 +139,24 @@ namespace CRUD_application_2.Controllers
         [HttpPost]
         public ActionResult Delete(int id, FormCollection collection)
         {
-            // Implement the Delete method (POST) here
-            var user = userlist.FirstOrDefault(u => u.Id == id);
+            try
+            {
+                // Implement the Delete method (POST) here
+                var user = userlist.FirstOrDefault(u => u.Id == id);
             if (user == null)
             {
                 return HttpNotFound();
             }
             userlist.Remove(user);
             return RedirectToAction("Index");
+            }
+            catch
+            {
+                // In case of any exception, you might want to log the error and redirect to a generic error page or return a specific view.
+                return View("Error");
+                // Ensure you have an Error view or handle this as per your application's error handling policy.
 
+            }
 
 
         }
