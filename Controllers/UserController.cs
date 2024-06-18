@@ -41,7 +41,7 @@ namespace CRUD_application_2.Controllers
             //Implement the Create method here
 
 
-            return View(userlist);
+            return View();
 
 
 
