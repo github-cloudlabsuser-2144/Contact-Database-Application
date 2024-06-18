@@ -39,7 +39,7 @@ namespace CRUD_application_2.Controllers
         public ActionResult Create()
         {
             //Implement the Create method here
-            return View();
+            return View(userlist);
 
 
         }
