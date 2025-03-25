@@ -1,164 +1,127 @@
-using CRUD_application_2.Models;
+using System;
+using System.Diagnostics;
 using System.Linq;
-using System.Web.Mvc;
- 
-namespace CRUD_application_2.Controllers
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using MyMvcApp.Models;
+
+namespace MyMvcApp.Controllers
 {
     public class UserController : Controller
     {
         public static System.Collections.Generic.List<User> userlist = new System.Collections.Generic.List<User>();
+        private static int nextId = 1; // Static variable to generate unique IDs
+
         // GET: User
         public ActionResult Index()
         {
-            // Implement the Index method here
-
-
-            return View(userlist);
+            return View(userlist); // Returns a view with the user list
         }
- 
+
         // GET: User/Details/5
         public ActionResult Details(int id)
         {
-            //get the user with the specified ID from the userlist
-
             var user = userlist.FirstOrDefault(u => u.Id == id);
             if (user == null)
             {
-                return HttpNotFound();
+                return NotFound(); // Return a 404 if the user is not found
             }
-
-            return View(user);
-
-
-
-
-
+            return View(user); // Return the details view with the user data
         }
- 
+
         // GET: User/Create
         public ActionResult Create()
         {
-            //Implement the Create method here
-
-
-            return View();
-
-
-
-
+            return View(); // Return the Create view
         }
- 
+
         // POST: User/Create
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Create(User user)
         {
-            // Implement the Create method (POST) here
             if (ModelState.IsValid)
             {
-                userlist.Add(user);
-                return RedirectToAction("Index");
+                user.Id = nextId++; // Assign a unique ID to the new user
+                userlist.Add(user); // Add the new user to the list
+                return RedirectToAction(nameof(Index)); // Redirect to the Index action
             }
-            return View(user);
+            return View(user); // Return the Create view with validation errors
         }
- 
+
         // GET: User/Edit/5
         public ActionResult Edit(int id)
         {
-            // This method is responsible for displaying the view to edit an existing user with the specified ID.
-            // It retrieves the user from the userlist based on the provided ID and passes it to the Edit view.
-
             var user = userlist.FirstOrDefault(u => u.Id == id);
-
             if (user == null)
             {
-                return HttpNotFound();
+                return NotFound(); // Return a 404 if the user is not found
             }
-
-                return View(user);
+            return View(user); // Return the Edit view with the user data
         }
- 
+
         // POST: User/Edit/5
         [HttpPost]
-        public ActionResult Edit(int id, User user)
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, User updatedUser)
         {
-            // This method is responsible for handling the HTTP POST request to update an existing user with the specified ID.
-            // It receives user input from the form submission and updates the corresponding user's information in the userlist.
-            // If successful, it redirects to the Index action to display the updated list of users.
-            // If no user is found with the provided ID, it returns a HttpNotFoundResult.
-            // If an error occurs during the process, it returns the Edit view to display any validation errors.
-            // POST: User/Edit/5
-            
-                var userToUpdate = userlist.FirstOrDefault(u => u.Id == id);
-                if (userToUpdate == null)
-                {
-                    return HttpNotFound();
-                }
-                if (ModelState.IsValid)
-                {
-                    // Assuming User class has properties that you want to update.
-                    // Update the properties of userToUpdate with the values from user
-                    // For example:
-                    // userToUpdate.Name = user.Name;
-                    // userToUpdate.Email = user.Email;
-                    // Add similar lines for other properties you wish to update
+            var user = userlist.FirstOrDefault(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound(); // Return a 404 if the user is not found
+            }
 
-                    // After updating the properties, redirect to the Index view
-                    return RedirectToAction("Index");
-                }
-                // If model state is not valid, return the Edit view with the user object to display validation errors
-                return View(user);
-     
-
-
+            if (ModelState.IsValid)
+            {
+                // Update the user's information
+                user.Name = updatedUser.Name;
+                user.Email = updatedUser.Email;
+                // Add other fields as necessary
+                return RedirectToAction(nameof(Index)); // Redirect to the Index action
+            }
+            return View(updatedUser); // Return the Edit view with validation errors
         }
 
         // GET: User/Delete/5
         public ActionResult Delete(int id)
         {
-            // Implement the Delete method here
-
-            try
-            {
-                var user = userlist.FirstOrDefault(u => u.Id == id);
-                if (user == null)
-                {
-                    return HttpNotFound();
-                }
-                userlist.Remove(user);
-                return RedirectToAction("Index");
-            }
-            catch
-            {
-                // In case of any exception, you might want to log the error and redirect to a generic error page or return a specific view.
-                return View("Error"); // Ensure you have an Error view or handle this as per your application's error handling policy.
-            }
-
-        }
- 
-        // POST: User/Delete/5
-        [HttpPost]
-        public ActionResult Delete(int id, FormCollection collection)
-        {
-            try
-            {
-                // Implement the Delete method (POST) here
-                var user = userlist.FirstOrDefault(u => u.Id == id);
+            var user = userlist.FirstOrDefault(u => u.Id == id);
             if (user == null)
             {
-                return HttpNotFound();
+                return NotFound(); // Return a 404 if the user is not found
             }
-            userlist.Remove(user);
-            return RedirectToAction("Index");
-            }
-            catch
+            return View(user); // Return the Delete confirmation view
+        }
+
+        // POST: User/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteConfirmed(int id)
+        {
+            var user = userlist.FirstOrDefault(u => u.Id == id);
+            if (user == null)
             {
-                // In case of any exception, you might want to log the error and redirect to a generic error page or return a specific view.
-                return View("Error");
-                // Ensure you have an Error view or handle this as per your application's error handling policy.
-
+                return NotFound(); // Return a 404 if the user is not found
             }
 
+            userlist.Remove(user); // Remove the user from the list
+            return RedirectToAction(nameof(Index)); // Redirect to the Index action
+        }
 
+        // GET: User/Search
+        public ActionResult Search(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return View("Index", userlist); // If no query is provided, return the full list
+            }
+
+            var searchResults = userlist
+                .Where(u => u.Name.Contains(query, StringComparison.OrdinalIgnoreCase) || 
+                            u.Email.Contains(query, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            return View("Index", searchResults); // Return the Index view with the filtered results
         }
     }
 }
